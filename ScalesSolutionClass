@@ -1,0 +1,237 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.*;
+import java.io.*;
+
+public class ScalesSolutionClass {
+	static ArrayList<Double> result = new ArrayList<Double>();
+	
+	
+	public static void main(String[] args) {
+		ScalesSolution sol = new ScalesSolution("001110");
+		//sol.println();
+		String fileLocation = "C:\\Users\\micha\\Documents\\1000_Primes.txt";
+		result = CS2004.ReadNumberFile(fileLocation);
+/*		result.add(2.0);
+		result.add(3.0);
+		result.add(5.0);
+		result.add(7.0);
+		result.add(11.0);
+		result.add(13.0);
+		result.add(17.0);*/
+		
+		ScalesSolution sl = RMHC(result, 250000);
+		sl.println();
+		System.out.println(sl.ScalesFitness(result));
+		
+		//System.out.println(sol.ScalesFitness(result));
+		//System.out.println(Arrays.toString(result.toArray()));
+	}
+	
+	public static ScalesSolution RMHC(ArrayList<Double> weights,int iter)
+	{
+		int n= weights.size();
+		if (weights.isEmpty() || weights == null){
+			return null;
+		}
+		if (iter<0){
+			return null;
+		}
+		ScalesSolution sol = new ScalesSolution(n);
+		for (int i=0; i<iter; i++){
+			ScalesSolution oldSol = new ScalesSolution(sol.GetSol());
+			sol.SmallChange();
+			System.out.println("new weights : " + sol.ScalesFitness(weights));
+			System.out.println("old weights : " + oldSol.ScalesFitness(weights));
+			if(sol.ScalesFitness(weights)>oldSol.ScalesFitness(weights)){
+				sol.setScasol(oldSol.GetSol()); //reset sol to oldsol		
+			}
+			sol.println();
+		}
+		return(sol);
+	}
+}
+
+class ScalesSolution
+{
+	private ArrayList<Integer> scasol = new ArrayList<>();
+	//Creates a new scales solution based on a string parameter
+	//The string parameter is checked to see if it contains all zeros and ones
+	//Otherwise the random binary string generator is used (n = length of parameter)
+	public ScalesSolution(String s)
+	{
+		boolean ok = true;
+		int n = s.length();
+		for(int i=0;i<n;++i)
+		{
+			char si = s.charAt(i);
+			if (si != '0' && si != '1') ok = false;
+		}
+		if (ok)
+		{
+			for(int i=0; i<s.length(); i++){
+				scasol.add(s.charAt(i) - '0');
+			}
+		}
+		else
+		{
+			scasol = RandomArrayList(n);
+		}
+	}
+	private static ArrayList<Integer> RandomArrayList(int n)
+	{
+		ArrayList<Integer> temp = new ArrayList<>();
+		for(int i=0; i<n; i++){
+			temp.add(CS2004.UI(0, 1));
+		}
+		return temp;
+	}
+	public ScalesSolution(int n) 
+	{
+		scasol = RandomArrayList(n);	
+	}
+	//This is the fitness function for the Scales problem
+	//This function returns -1 if the number of weights is less than
+	//the size of the current solution
+	public double ScalesFitness(ArrayList<Double> weights)
+	{
+		if (scasol.size() > weights.size()) return(-1);
+		double lhs = 0.0,rhs = 0.0;
+		int n = scasol.size();
+		for(int i=0; i<n; i ++) {
+			if(scasol.get(i)==0) {			//checks elements of scasol for 0
+				lhs = lhs +weights.get(i);		//adds left hand side
+			}else{								//else looks for 1
+				rhs = rhs +weights.get(i);		//adds right hand side
+			}
+		}
+		//Code goes here
+		//Check each element of scasol for a 0 (lhs) and 1 (rhs) add the weight wi
+		//to variables lhs and rhs as appropriate
+		return(Math.abs(lhs-rhs));
+	}
+	//Display the string without a new line
+	public void print()
+	{
+		System.out.println(Arrays.toString(scasol.toArray()));
+	}
+	//Display the string with a new line
+	public void println()
+	{
+		print();
+		System.out.println();
+	}
+	
+	public void SmallChange(){
+		int p = CS2004.UI(0,scasol.size()-1);
+		if(scasol.get(p)==1){
+			scasol.set(p, 0);
+		}else{
+			scasol.set(p, 1);
+		}
+	}
+	
+		public String GetSol()
+		{
+			StringBuilder s= new StringBuilder();
+			for(int i=0; i<scasol.size(); i++){
+				s.append(scasol.get(i));
+			}
+			return s.toString();
+		}
+	
+	public void setScasol(String string){
+		for (int i=0; i<scasol.size();i++){
+			scasol.set(i, string.charAt(i) - '0');
+		}
+	}
+
+	
+	public static void main(String args[]){	
+		//System.out.println(RandomBinaryString(9));
+		
+		
+		
+		//ScalesSolution s = new ScalesSolution(3);
+		ArrayList<Double> weights = new ArrayList<Double>();
+		weights.add(1.0);
+		weights.add(2.0);
+		weights.add(3.0);
+		weights.add(6.0);
+
+		//System.out.println(s.ScalesFitness(weights));
+		//s.println();
+		//s.SmallChange();
+		//s.println();
+		//s = new ScalesSolution(10);
+		//s.println();
+		//s.SmallChange();
+		//s.println();
+		ScalesSolution s = new ScalesSolution("1010");
+		s.println();
+		s.SmallChange();
+		s.println();
+		System.out.println(s.ScalesFitness(weights));
+	}
+}
+
+
+
+class CS2004 
+{
+	//Shared random object
+	static private Random rand;
+	//Create a uniformly distributed random integer between aa and bb inclusive
+	static public int UI(int aa,int bb)
+	{
+		int a = Math.min(aa,bb);
+		int b = Math.max(aa,bb);
+		if (rand == null) 
+		{
+			rand = new Random();
+			rand.setSeed(System.nanoTime());
+		}
+		int d = b - a + 1;
+		int x = rand.nextInt(d) + a;
+		return(x);
+	}
+	//Create a uniformly distributed random double between a and b inclusive
+	static public double UR(double a,double b)
+	{
+		if (rand == null) 
+		{
+			rand = new Random();
+			rand.setSeed(System.nanoTime());
+		}
+		return((b-a)*rand.nextDouble()+a);
+	}
+	//This method reads in a text file and parses all of the numbers in it
+	//This code is not very good and can be improved!
+	//But it should work!!!
+	//It takes in as input a string filename and returns an array list of Doubles
+	static public ArrayList<Double> ReadNumberFile(String filename)
+	{
+		ArrayList<Double> res = new ArrayList<Double>();
+		Reader r;
+		try
+		{
+			r = new BufferedReader(new FileReader(filename));
+			StreamTokenizer stok = new StreamTokenizer(r);
+			stok.parseNumbers();
+			stok.nextToken();
+			while (stok.ttype != StreamTokenizer.TT_EOF) 
+			{
+				if (stok.ttype == StreamTokenizer.TT_NUMBER)
+				{
+					res.add(stok.nval);
+				}
+				stok.nextToken();
+			}
+		}
+		catch(Exception E)
+		{
+			System.out.println("+++ReadFile: "+E.getMessage());
+		}
+	    return(res);
+	}
+}
