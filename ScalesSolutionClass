@@ -20,7 +20,7 @@ public class ScalesSolutionClass {
 		result.add(13.0);
 		result.add(17.0);*/
 		
-		ScalesSolution sl = RMHC(result, 250000);
+		ScalesSolution sl = SalesManSolutionRRHC(result, 25000);
 		sl.println();
 		System.out.println(sl.ScalesFitness(result));
 		
@@ -28,25 +28,41 @@ public class ScalesSolutionClass {
 		//System.out.println(Arrays.toString(result.toArray()));
 	}
 	
+	public static ScalesSolution SalesManSolutionRRHC(ArrayList<Double> weights, int iter){
+		try{
+			if (weights.isEmpty()){
+				return null;
+			}
+			if (iter<0){
+				return null;
+			}
+			int size = weights.size();
+			ScalesSolution tour = new ScalesSolution(size);
+			double bestFitness= Double.MAX_VALUE;
+			for(int i=0; i<10; i++){
+				ScalesSolution newTour = RMHC(weights, iter/10);
+				double newFitness = newTour.ScalesFitness(weights);
+				if(bestFitness>newFitness){
+					bestFitness = newFitness;
+					tour = new ScalesSolution(newTour.GetSol());
+				}
+			}
+			return tour;
+		}catch (NullPointerException e){
+			return null;
+		}
+	}
+
 	public static ScalesSolution RMHC(ArrayList<Double> weights,int iter)
 	{
 		int n= weights.size();
-		if (weights.isEmpty() || weights == null){
-			return null;
-		}
-		if (iter<0){
-			return null;
-		}
 		ScalesSolution sol = new ScalesSolution(n);
 		for (int i=0; i<iter; i++){
 			ScalesSolution oldSol = new ScalesSolution(sol.GetSol());
 			sol.SmallChange();
-			System.out.println("new weights : " + sol.ScalesFitness(weights));
-			System.out.println("old weights : " + oldSol.ScalesFitness(weights));
 			if(sol.ScalesFitness(weights)>oldSol.ScalesFitness(weights)){
 				sol.setScasol(oldSol.GetSol()); //reset sol to oldsol		
 			}
-			sol.println();
 		}
 		return(sol);
 	}
@@ -144,34 +160,6 @@ class ScalesSolution
 		for (int i=0; i<scasol.size();i++){
 			scasol.set(i, string.charAt(i) - '0');
 		}
-	}
-
-	
-	public static void main(String args[]){	
-		//System.out.println(RandomBinaryString(9));
-		
-		
-		
-		//ScalesSolution s = new ScalesSolution(3);
-		ArrayList<Double> weights = new ArrayList<Double>();
-		weights.add(1.0);
-		weights.add(2.0);
-		weights.add(3.0);
-		weights.add(6.0);
-
-		//System.out.println(s.ScalesFitness(weights));
-		//s.println();
-		//s.SmallChange();
-		//s.println();
-		//s = new ScalesSolution(10);
-		//s.println();
-		//s.SmallChange();
-		//s.println();
-		ScalesSolution s = new ScalesSolution("1010");
-		s.println();
-		s.SmallChange();
-		s.println();
-		System.out.println(s.ScalesFitness(weights));
 	}
 }
 
