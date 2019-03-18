@@ -8,8 +8,6 @@ public class ScalesSolutionClass {
 	
 	
 	public static void main(String[] args) {
-		ScalesSolution sol = new ScalesSolution("001110");
-		//sol.println();
 		String fileLocation = "C:\\Users\\micha\\Documents\\1000_Primes.txt";
 		result = CS2004.ReadNumberFile(fileLocation);
 /*		result.add(2.0);
@@ -19,38 +17,31 @@ public class ScalesSolutionClass {
 		result.add(11.0);
 		result.add(13.0);
 		result.add(17.0);*/
-		
-		ScalesSolution sl = SalesManSolutionRRHC(result, 25000);
-		sl.println();
-		System.out.println(sl.ScalesFitness(result));
-		
-		//System.out.println(sol.ScalesFitness(result));
-		//System.out.println(Arrays.toString(result.toArray()));
+		for(int i=0; i<30; i++){
+			ScalesSolution s2 = new ScalesSolution(SalesManSolutionRRHC(result, 25000));
+			System.out.println(s2.ScalesFitness(result));
+		}
 	}
 	
-	public static ScalesSolution SalesManSolutionRRHC(ArrayList<Double> weights, int iter){
-		try{
-			if (weights.isEmpty()){
-				return null;
-			}
-			if (iter<0){
-				return null;
-			}
-			int size = weights.size();
-			ScalesSolution tour = new ScalesSolution(size);
-			double bestFitness= Double.MAX_VALUE;
-			for(int i=0; i<10; i++){
-				ScalesSolution newTour = RMHC(weights, iter/10);
-				double newFitness = newTour.ScalesFitness(weights);
-				if(bestFitness>newFitness){
-					bestFitness = newFitness;
-					tour = new ScalesSolution(newTour.GetSol());
-				}
-			}
-			return tour;
-		}catch (NullPointerException e){
+	public static ArrayList<Integer> SalesManSolutionRRHC(ArrayList<Double> weights, int iter){
+		if (weights == null || weights.isEmpty()){
 			return null;
 		}
+		if (iter<1){
+			return null;
+		}
+		int size = weights.size();
+		ScalesSolution tour = new ScalesSolution(size);
+		double bestFitness= Double.MAX_VALUE;
+		for(int i=0; i<15; i++){
+			ScalesSolution newTour = RMHC(weights, iter/15);
+			double newFitness = newTour.ScalesFitness(weights);
+			if(bestFitness>newFitness){
+				bestFitness = newFitness;
+				tour = new ScalesSolution(newTour.GetSol());
+			}
+		}
+		return tour.GetSol();
 	}
 
 	public static ScalesSolution RMHC(ArrayList<Double> weights,int iter)
@@ -61,7 +52,7 @@ public class ScalesSolutionClass {
 			ScalesSolution oldSol = new ScalesSolution(sol.GetSol());
 			sol.SmallChange();
 			if(sol.ScalesFitness(weights)>oldSol.ScalesFitness(weights)){
-				sol.setScasol(oldSol.GetSol()); //reset sol to oldsol		
+				sol = oldSol;
 			}
 		}
 		return(sol);
@@ -71,28 +62,14 @@ public class ScalesSolutionClass {
 class ScalesSolution
 {
 	private ArrayList<Integer> scasol = new ArrayList<>();
-	//Creates a new scales solution based on a string parameter
-	//The string parameter is checked to see if it contains all zeros and ones
-	//Otherwise the random binary string generator is used (n = length of parameter)
-	public ScalesSolution(String s)
+	
+	public ScalesSolution(ArrayList<Integer> list)
 	{
-		boolean ok = true;
-		int n = s.length();
-		for(int i=0;i<n;++i)
-		{
-			char si = s.charAt(i);
-			if (si != '0' && si != '1') ok = false;
-		}
-		if (ok)
-		{
-			for(int i=0; i<s.length(); i++){
-				scasol.add(s.charAt(i) - '0');
-			}
-		}
-		else
-		{
-			scasol = RandomArrayList(n);
-		}
+		scasol = new ArrayList<>(list);
+	}
+	
+	public ScalesSolution(int n){
+		scasol = RandomArrayList(n);
 	}
 	private static ArrayList<Integer> RandomArrayList(int n)
 	{
@@ -102,40 +79,20 @@ class ScalesSolution
 		}
 		return temp;
 	}
-	public ScalesSolution(int n) 
-	{
-		scasol = RandomArrayList(n);	
-	}
-	//This is the fitness function for the Scales problem
-	//This function returns -1 if the number of weights is less than
-	//the size of the current solution
+	
 	public double ScalesFitness(ArrayList<Double> weights)
 	{
 		if (scasol.size() > weights.size()) return(-1);
 		double lhs = 0.0,rhs = 0.0;
 		int n = scasol.size();
 		for(int i=0; i<n; i ++) {
-			if(scasol.get(i)==0) {			//checks elements of scasol for 0
-				lhs = lhs +weights.get(i);		//adds left hand side
-			}else{								//else looks for 1
-				rhs = rhs +weights.get(i);		//adds right hand side
+			if(scasol.get(i)==0) {
+				lhs = lhs +weights.get(i);
+			}else{
+				rhs = rhs +weights.get(i);
 			}
 		}
-		//Code goes here
-		//Check each element of scasol for a 0 (lhs) and 1 (rhs) add the weight wi
-		//to variables lhs and rhs as appropriate
 		return(Math.abs(lhs-rhs));
-	}
-	//Display the string without a new line
-	public void print()
-	{
-		System.out.println(Arrays.toString(scasol.toArray()));
-	}
-	//Display the string with a new line
-	public void println()
-	{
-		print();
-		System.out.println();
 	}
 	
 	public void SmallChange(){
@@ -146,20 +103,9 @@ class ScalesSolution
 			scasol.set(p, 1);
 		}
 	}
-	
-		public String GetSol()
-		{
-			StringBuilder s= new StringBuilder();
-			for(int i=0; i<scasol.size(); i++){
-				s.append(scasol.get(i));
-			}
-			return s.toString();
-		}
-	
-	public void setScasol(String string){
-		for (int i=0; i<scasol.size();i++){
-			scasol.set(i, string.charAt(i) - '0');
-		}
+
+	public ArrayList<Integer> GetSol(){
+		return scasol;
 	}
 }
 
